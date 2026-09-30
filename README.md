@@ -5,8 +5,8 @@ Plugin de utilidades de mantenimiento para WordPress, con modo mantenimiento, sn
 ## Funciones nuevas
 
 - **Temporales e inodos:** analiza `uploads`, `wp-content/cache`, `upgrade` y `languages`, pero solo propone nombres temporales o ficheros dentro de carpetas de caché conocidas. La eliminación siempre requiere selección y nonce.
-- **Tamaños de medios:** muestra tamaños registrados y variantes existentes, permite impedir su generación futura y borrar solo las variantes de adjuntos seleccionadas. El original nunca se borra.
-- **Actualizaciones:** el plugin está vinculado a `TaisaDigital/taisa-tools` y consulta la última release cada seis horas. Puede sobrescribirse con `TAISA_TOOLS_GITHUB_REPO` en `wp-config.php` si se usa un fork.
+- **Tamaños de medios:** permite impedir la generación futura de tamaños registrados. El análisis de uso y la limpieza de derivados se realiza desde Taisa Image Optimizer; Taisa Tools conserva la configuración compartida.
+- **Actualizaciones:** el plugin está vinculado a `TaisaDigital/taisa-tools` y consulta la última release cada seis horas; no requiere configuración en `wp-config.php`.
 
 Para un repositorio privado, define también `TAISA_TOOLS_GITHUB_TOKEN` en `wp-config.php`. Un repositorio público es más sencillo para instalaciones de clientes; el token debe ser de solo lectura y no debe guardarse en el repositorio.
 
@@ -15,6 +15,11 @@ Para un repositorio privado, define también `TAISA_TOOLS_GITHUB_TOKEN` en `wp-c
 Haz una copia de seguridad antes de borrar variantes. La desactivación de un tamaño afecta a futuras subidas y regeneraciones; no elimina archivos existentes hasta que se solicite expresamente.
 
 ## Changelog
+
+### 1.2.0
+
+- Separada la configuración de generación de tamaños de la inspección y limpieza de variantes.
+- Migradas automáticamente las selecciones guardadas por versiones anteriores de Taisa Image Optimizer.
 
 ### 1.1.1
 

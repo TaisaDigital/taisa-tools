@@ -24,7 +24,6 @@ function taisa_tools_render_admin_page() {
     );
 
     $storage_scan = null;
-    $media_report = null;
 
     // Handle POST
     if ( isset($_POST['taisa_tools_nonce']) && wp_verify_nonce( sanitize_text_field( wp_unslash($_POST['taisa_tools_nonce']) ), 'taisa_tools_save' ) ) {
@@ -36,16 +35,9 @@ function taisa_tools_render_admin_page() {
             $result = taisa_tools_delete_storage_candidates( $selected );
             echo '<div class="updated notice"><p>' . esc_html( sprintf( __( 'Eliminados %d ficheros temporales (%s).', 'taisa-tools' ), $result['deleted'], size_format( $result['bytes'] ) ) ) . '</p></div>';
             $storage_scan = taisa_tools_scan_storage();
-        } elseif ( 'delete_media_sizes' === $action ) {
-            $selected = isset( $_POST['media_sizes'] ) ? (array) wp_unslash( $_POST['media_sizes'] ) : array();
-            $result = taisa_tools_delete_media_sizes( $selected );
-            echo '<div class="updated notice"><p>' . esc_html( sprintf( __( 'Eliminados %d ficheros de variantes en %d adjuntos (%s).', 'taisa-tools' ), $result['deleted'], $result['attachments'], size_format( $result['bytes'] ) ) ) . '</p></div>';
-            $media_report = taisa_tools_media_size_report();
-        } elseif ( 'scan_media' === $action ) {
-            $media_report = taisa_tools_media_size_report();
         } elseif ( 'save_media_settings' === $action ) {
-            update_option( 'taisa_tools_disabled_image_sizes', isset( $_POST['disabled_sizes'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['disabled_sizes'] ) ) : array(), false );
-            $media_report = taisa_tools_media_size_report();
+            $enabled_sizes = isset( $_POST['enabled_sizes'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['enabled_sizes'] ) ) : array();
+            update_option( 'taisa_tools_disabled_image_sizes', array_values( array_diff( get_intermediate_image_sizes(), $enabled_sizes ) ), false );
             echo '<div class="updated notice"><p>' . esc_html__('Tamaños futuros actualizados.', 'taisa-tools') . '</p></div>';
         }
         // Only save if constants are not overriding
@@ -56,9 +48,6 @@ function taisa_tools_render_admin_page() {
         );
         if ( 'save_settings' === $action ) {
             update_option( 'taisa_tools_settings', $new, false );
-            if ( ! defined( 'TAISA_TOOLS_GITHUB_REPO' ) ) {
-                update_option( 'taisa_tools_github_repo', isset( $_POST['github_repo'] ) ? sanitize_text_field( wp_unslash( $_POST['github_repo'] ) ) : '', false );
-            }
         }
         $settings = taisa_tools_get_settings();
         if ( 'save_settings' === $action ) { echo '<div class="updated notice"><p>' . esc_html__('Ajustes guardados.', 'taisa-tools') . '</p></div>'; }
@@ -86,10 +75,7 @@ function taisa_tools_render_admin_page() {
 
             <div class="taisa-card">
                 <h2><?php echo esc_html__('Actualizaciones desde GitHub','taisa-tools'); ?></h2>
-                <p class="desc"><?php echo esc_html__('Usa el repositorio público o privado que contenga las releases del plugin. Para repositorios privados define TAISA_TOOLS_GITHUB_TOKEN en wp-config.php.','taisa-tools'); ?></p>
-                <label for="github_repo"><strong><?php echo esc_html__('Repositorio (owner/repo)','taisa-tools'); ?></strong></label>
-                <input class="regular-text" type="text" id="github_repo" name="github_repo" value="<?php echo esc_attr( taisa_tools_github_repo() ); ?>" placeholder="taisa/taisa-tools" <?php disabled( defined('TAISA_TOOLS_GITHUB_REPO') ); ?> />
-                <?php if ( defined('TAISA_TOOLS_GITHUB_REPO') ) : ?><p class="desc"><?php echo esc_html__('Controlado por TAISA_TOOLS_GITHUB_REPO en wp-config.php.','taisa-tools'); ?></p><?php endif; ?>
+                <p class="desc"><?php echo wp_kses_post( sprintf( __( 'Repositorio de actualizaciones: <a href="%1$s" target="_blank" rel="noopener noreferrer">%2$s</a>. No necesitas configurar wp-config.php.', 'taisa-tools' ), esc_url( 'https://github.com/TaisaDigital/taisa-tools' ), esc_html( taisa_tools_github_repo() ) ) ); ?></p>
             </div>
 
             <div class="taisa-card">
@@ -145,19 +131,20 @@ function taisa_tools_render_admin_page() {
         </div>
 
         <div class="taisa-card">
-            <h2><?php echo esc_html__('Tamaños de medios','taisa-tools'); ?></h2>
-            <p class="desc"><?php echo esc_html__('Las casillas desactivan la generación futura. El botón de borrado elimina únicamente las variantes registradas en los metadatos de los adjuntos; nunca borra el original. Haz una copia antes de borrar.','taisa-tools'); ?></p>
-            <?php if ( $media_report ) : ?><form method="post"><?php wp_nonce_field( 'taisa_tools_save', 'taisa_tools_nonce' ); ?><input type="hidden" name="taisa_tools_action" value="save_media_settings" />
-                <table class="widefat striped"><thead><tr><th></th><th><?php echo esc_html__('Tamaño','taisa-tools'); ?></th><th><?php echo esc_html__('Dimensiones','taisa-tools'); ?></th><th><?php echo esc_html__('Adjuntos con variante','taisa-tools'); ?></th><th><?php echo esc_html__('Espacio aproximado','taisa-tools'); ?></th></tr></thead><tbody>
-                <?php foreach ( $media_report as $name => $row ) : ?><tr><td><input type="checkbox" name="disabled_sizes[]" value="<?php echo esc_attr( $name ); ?>" <?php checked( in_array( $name, taisa_tools_disabled_image_sizes(), true ) ); ?> /></td><td><code><?php echo esc_html( $name ); ?></code><?php if ( in_array( $name, taisa_tools_disabled_image_sizes(), true ) ) : ?> <em>(<?php echo esc_html__('desactivado','taisa-tools'); ?>)</em><?php endif; ?></td><td><?php echo esc_html( $row['width'] . '×' . $row['height'] . ( $row['crop'] ? ' · crop' : '' ) ); ?></td><td><?php echo esc_html( number_format_i18n( $row['attachments'] ) ); ?></td><td><?php echo esc_html( size_format( $row['bytes'] ) ); ?></td></tr><?php endforeach; ?></tbody></table>
-                <p><button class="button button-primary" type="submit"><?php echo esc_html__('Guardar tamaños desactivados','taisa-tools'); ?></button></p>
-            </form><?php endif; ?>
-            <?php if ( $media_report ) : ?><form method="post"><?php wp_nonce_field( 'taisa_tools_save', 'taisa_tools_nonce' ); ?><input type="hidden" name="taisa_tools_action" value="delete_media_sizes" />
-                <p class="desc"><?php echo esc_html__('Selecciona las variantes a borrar:', 'taisa-tools'); ?></p>
-                <?php foreach ( $media_report as $name => $row ) : ?><label style="display:inline-block;margin-right:1em"><input type="checkbox" name="media_sizes[]" value="<?php echo esc_attr( $name ); ?>" /> <code><?php echo esc_html( $name ); ?></code></label><?php endforeach; ?>
-                <p><button class="button button-secondary" type="submit" onclick="return confirm('<?php echo esc_js( __('¿Borrar las variantes seleccionadas? Esta acción no se puede deshacer sin una copia.', 'taisa-tools') ); ?>');"><?php echo esc_html__('Borrar variantes seleccionadas','taisa-tools'); ?></button></p>
-            </form><?php endif; ?>
-            <form method="post"><?php wp_nonce_field( 'taisa_tools_save', 'taisa_tools_nonce' ); ?><input type="hidden" name="taisa_tools_action" value="scan_media" /><button class="button" type="submit"><?php echo esc_html__('Actualizar informe de tamaños','taisa-tools'); ?></button></form>
+            <h2><?php echo esc_html__('Generación de tamaños de medios','taisa-tools'); ?></h2>
+            <p class="desc"><?php echo esc_html__('Desmarca los tamaños que no quieras generar en futuras subidas o regeneraciones. Esta pantalla no borra archivos existentes; para analizarlos y limpiarlos usa Taisa Image Optimizer.','taisa-tools'); ?></p>
+            <?php
+            $registered_sizes = function_exists( 'wp_get_registered_image_subsizes' ) ? wp_get_registered_image_subsizes() : array();
+            foreach ( get_intermediate_image_sizes() as $size_name ) {
+                if ( ! isset( $registered_sizes[ $size_name ] ) ) { $registered_sizes[ $size_name ] = array( 'width' => 0, 'height' => 0, 'crop' => false ); }
+            }
+            $disabled_sizes = taisa_tools_disabled_image_sizes();
+            ?>
+            <form method="post"><?php wp_nonce_field( 'taisa_tools_save', 'taisa_tools_nonce' ); ?><input type="hidden" name="taisa_tools_action" value="save_media_settings" />
+                <table class="widefat striped"><thead><tr><th><?php echo esc_html__('Generar','taisa-tools'); ?></th><th><?php echo esc_html__('Tamaño','taisa-tools'); ?></th><th><?php echo esc_html__('Dimensiones','taisa-tools'); ?></th><th><?php echo esc_html__('Recorte','taisa-tools'); ?></th></tr></thead><tbody>
+                <?php foreach ( $registered_sizes as $name => $definition ) : ?><tr><td><input type="checkbox" name="enabled_sizes[]" value="<?php echo esc_attr( $name ); ?>" <?php checked( ! in_array( $name, $disabled_sizes, true ) ); ?> /></td><td><code><?php echo esc_html( $name ); ?></code></td><td><?php echo esc_html( absint( $definition['width'] ) . ' × ' . absint( $definition['height'] ) ); ?></td><td><?php echo esc_html( empty( $definition['crop'] ) ? __('Proporcional','taisa-tools') : __('Recortado','taisa-tools') ); ?></td></tr><?php endforeach; ?></tbody></table>
+                <p><button class="button button-primary" type="submit"><?php echo esc_html__('Guardar generación de tamaños','taisa-tools'); ?></button></p>
+            </form>
         </div>
 
         <div class="taisa-help">
