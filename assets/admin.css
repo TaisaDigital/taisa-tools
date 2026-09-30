@@ -1,0 +1,12 @@
+.taisa-tools-wrap{max-width:960px}
+.taisa-card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px 20px;margin:16px 0}
+.taisa-card h2{margin:0 0 10px}
+.taisa-card .desc{color:#6b7280;font-size:13px;line-height:1.5}
+.taisa-help{margin-top:24px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:16px 20px}
+.switch{position:relative;display:inline-block;width:54px;height:28px;vertical-align:middle;margin-right:8px}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;inset:0;background:#d1d5db;transition:.2s;border-radius:999px}
+.slider:before{position:absolute;content:"";height:22px;width:22px;left:3px;top:3px;background:#fff;transition:.2s;border-radius:999px;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+input:checked + .slider{background:#2563eb}
+input:checked + .slider:before{transform:translateX(26px)}
+
