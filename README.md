@@ -16,6 +16,11 @@ Haz una copia de seguridad antes de borrar variantes. La desactivación de un ta
 
 ## Changelog
 
+### 1.3.1
+
+- Corregida la salida escapada de la plantilla de mantenimiento y los textos de administración revisados con Plugin Check.
+- Publicación compatible con las instalaciones que ya tienen Taisa Tools 1.3.0.
+
 ### 1.2.0
 
 - Separada la configuración de generación de tamaños de la inspección y limpieza de variantes.
@@ -30,4 +35,3 @@ Haz una copia de seguridad antes de borrar variantes. La desactivación de un ta
 - Añadido informe y limpieza selectiva de ficheros temporales/cachés.
 - Añadida gestión de tamaños de imagen y borrado selectivo de variantes.
 - Añadidas actualizaciones desde releases de GitHub.
-

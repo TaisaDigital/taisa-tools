@@ -2,16 +2,19 @@
 /**
  * Plugin Name: Taisa Tools – Funciones personalizadas
  * Description: Mini framework seguro para funciones personalizadas: mantenimiento, snippet de <head> y mejoras de rendimiento.
- * Author: Taisa – Raquel García Arévalo
- * Version: 1.2.0
+ * Author: Taisa - Raquel Garcia Arevalo
+ * Version: 1.3.1
+ * Author URI: https://www.taisadigital.com
  * Requires at least: 5.8
  * Requires PHP: 7.4
  * Text Domain: taisa-tools
+ * License: GPLv2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  */
 
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'TAISA_TOOLS_VERSION', '1.2.0' );
+define( 'TAISA_TOOLS_VERSION', '1.3.1' );
 define( 'TAISA_TOOLS_GITHUB_REPO', 'TaisaDigital/taisa-tools' );
 define( 'TAISA_TOOLS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'TAISA_TOOLS_URL', plugin_dir_url( __FILE__ ) );
@@ -71,4 +74,3 @@ add_action( 'plugins_loaded', function() {
         require_once TAISA_TOOLS_PATH . 'includes/performance.php';
     }
 });
-

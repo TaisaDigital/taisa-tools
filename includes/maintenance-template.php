@@ -35,7 +35,7 @@ $bg_url = esc_url( trailingslashit( plugin_dir_url(__FILE__) ) . '../assets/main
         html,body{height:100%;margin:0}
         body{
             min-height:100vh;
-            background-image: linear-gradient(0deg, var(--overlay), var(--overlay)), url('<?php echo $bg_url; ?>');
+            background-image: linear-gradient(0deg, var(--overlay), var(--overlay)), url('<?php echo esc_attr( $bg_url ); ?>');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -85,4 +85,3 @@ $bg_url = esc_url( trailingslashit( plugin_dir_url(__FILE__) ) . '../assets/main
     </div>
 </body>
 </html>
-

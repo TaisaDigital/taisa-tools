@@ -33,7 +33,13 @@ function taisa_tools_render_admin_page() {
         } elseif ( 'delete_storage' === $action ) {
             $selected = isset( $_POST['storage_files'] ) ? (array) wp_unslash( $_POST['storage_files'] ) : array();
             $result = taisa_tools_delete_storage_candidates( $selected );
-            echo '<div class="updated notice"><p>' . esc_html( sprintf( __( 'Eliminados %d ficheros temporales (%s).', 'taisa-tools' ), $result['deleted'], size_format( $result['bytes'] ) ) ) . '</p></div>';
+            $deleted_message = sprintf(
+                /* translators: 1: number of deleted temporary files, 2: space reclaimed. */
+                __( 'Eliminados %1$d ficheros temporales (%2$s).', 'taisa-tools' ),
+                $result['deleted'],
+                size_format( $result['bytes'] )
+            );
+            echo '<div class="updated notice"><p>' . esc_html( $deleted_message ) . '</p></div>';
             $storage_scan = taisa_tools_scan_storage();
         } elseif ( 'save_media_settings' === $action ) {
             $enabled_sizes = isset( $_POST['enabled_sizes'] ) ? array_map( 'sanitize_key', (array) wp_unslash( $_POST['enabled_sizes'] ) ) : array();
@@ -55,6 +61,17 @@ function taisa_tools_render_admin_page() {
 
 
     wp_enqueue_style( 'taisa-tools-admin', TAISA_TOOLS_URL . 'assets/admin.css', array(), TAISA_TOOLS_VERSION );
+    $repository_description = sprintf(
+        /* translators: 1: GitHub repository URL, 2: repository identifier. */
+        __( 'Repositorio de actualizaciones: <a href="%1$s" target="_blank" rel="noopener noreferrer">%2$s</a>. No necesitas configurar wp-config.php.', 'taisa-tools' ),
+        esc_url( 'https://github.com/TaisaDigital/taisa-tools' ),
+        esc_html( taisa_tools_github_repo() )
+    );
+    $head_snippet_description = sprintf(
+        /* translators: %s: path to the optional PHP file. */
+        __( 'Insertará el contenido del archivo <code>%s</code> si existe y es legible.', 'taisa-tools' ),
+        '/wp-content/uploads/taisa-custom/head-snippet.php'
+    );
     ?>
     <div class="wrap taisa-tools-wrap">
         <h1><?php echo esc_html__('Taisa Tools – Funciones personalizadas','taisa-tools'); ?></h1>
@@ -75,7 +92,7 @@ function taisa_tools_render_admin_page() {
 
             <div class="taisa-card">
                 <h2><?php echo esc_html__('Actualizaciones desde GitHub','taisa-tools'); ?></h2>
-                <p class="desc"><?php echo wp_kses_post( sprintf( __( 'Repositorio de actualizaciones: <a href="%1$s" target="_blank" rel="noopener noreferrer">%2$s</a>. No necesitas configurar wp-config.php.', 'taisa-tools' ), esc_url( 'https://github.com/TaisaDigital/taisa-tools' ), esc_html( taisa_tools_github_repo() ) ) ); ?></p>
+                <p class="desc"><?php echo wp_kses_post( $repository_description ); ?></p>
             </div>
 
             <div class="taisa-card">
@@ -88,10 +105,7 @@ function taisa_tools_render_admin_page() {
                     <p class="desc"><?php echo esc_html__('Controlado por constante TAISA_TOOLS_HEAD_ENABLED en wp-config.php','taisa-tools'); ?></p>
                 <?php endif; ?>
                 <p class="desc">
-                    <?php echo wp_kses_post( sprintf(
-                        __('Insertará el contenido del archivo <code>%s</code> si existe y es legible.','taisa-tools'),
-                        '/wp-content/uploads/taisa-custom/head-snippet.php'
-                    ) ); ?>
+                    <?php echo wp_kses_post( $head_snippet_description ); ?>
                 </p>
             </div>
 
@@ -122,7 +136,16 @@ function taisa_tools_render_admin_page() {
                 <button class="button" type="submit"><?php echo esc_html__('Analizar temporales','taisa-tools'); ?></button>
             </form>
             <?php if ( is_array( $storage_scan ) ) : ?>
-                <p><?php echo esc_html( sprintf( __('Candidatos: %d · Elementos revisados: %d%s','taisa-tools'), count($storage_scan['files']), $storage_scan['scanned'], $storage_scan['truncated'] ? __(' · límite alcanzado','taisa-tools') : '' ) ); ?></p>
+                <?php
+                $storage_scan_summary = sprintf(
+                    /* translators: 1: number of candidates, 2: number of items reviewed, 3: optional scan limit notice. */
+                    __( 'Candidatos: %1$d · Elementos revisados: %2$d%3$s', 'taisa-tools' ),
+                    count( $storage_scan['files'] ),
+                    $storage_scan['scanned'],
+                    $storage_scan['truncated'] ? __( ' · límite alcanzado', 'taisa-tools' ) : ''
+                );
+                ?>
+                <p><?php echo esc_html( $storage_scan_summary ); ?></p>
                 <?php if ( $storage_scan['files'] ) : ?><form method="post"><?php wp_nonce_field( 'taisa_tools_save', 'taisa_tools_nonce' ); ?><input type="hidden" name="taisa_tools_action" value="delete_storage" />
                     <?php foreach ( $storage_scan['files'] as $file ) : ?><label style="display:block"><input type="checkbox" name="storage_files[]" value="<?php echo esc_attr( $file['path'] ); ?>" checked /> <?php echo esc_html( $file['label'] . ': ' . str_replace( ABSPATH, '', $file['path'] ) . ' (' . size_format( $file['size'] ) . ')' ); ?></label><?php endforeach; ?>
                     <p><button class="button button-secondary" type="submit" onclick="return confirm('<?php echo esc_js( __('¿Eliminar los temporales seleccionados? Comprueba antes que no hay una tarea en curso.', 'taisa-tools') ); ?>');"><?php echo esc_html__('Eliminar seleccionados','taisa-tools'); ?></button></p>
@@ -157,4 +180,3 @@ function taisa_tools_render_admin_page() {
     </div>
     <?php
 }
-
