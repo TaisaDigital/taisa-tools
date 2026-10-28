@@ -5,19 +5,20 @@ Plugin de utilidades de mantenimiento para WordPress, con modo mantenimiento, sn
 ## Funciones nuevas
 
 - **Temporales e inodos:** analiza `uploads`, `wp-content/cache`, `upgrade` y `languages`, pero solo propone nombres temporales o ficheros dentro de carpetas de caché conocidas. La eliminación siempre requiere selección y nonce.
-- **Tamaños de medios:** permite impedir la generación futura de tamaños registrados. El análisis de uso y la limpieza de derivados se realiza desde Taisa Image Optimizer; Taisa Tools conserva la configuración compartida.
+- **Tamaños de medios:** permite impedir la generación futura de tamaños registrados y, en el frontal, omitir de los metadatos las variantes desactivadas para que WordPress use el original si se solicita uno de esos tamaños. El análisis de uso y la limpieza de derivados se realiza desde Taisa Image Optimizer; Taisa Tools conserva la configuración compartida.
 - **Actualizaciones:** el plugin está vinculado a `TaisaDigital/taisa-tools` y consulta la última release cada seis horas; no requiere configuración en `wp-config.php`.
 
 Para un repositorio privado, define también `TAISA_TOOLS_GITHUB_TOKEN` en `wp-config.php`. Un repositorio público es más sencillo para instalaciones de clientes; el token debe ser de solo lectura y no debe guardarse en el repositorio.
 
 ## Seguridad y operación
 
-Haz una copia de seguridad antes de borrar variantes. La desactivación de un tamaño afecta a futuras subidas y regeneraciones; no elimina archivos existentes hasta que se solicite expresamente.
+Haz una copia de seguridad antes de borrar variantes. La desactivación de un tamaño afecta a futuras subidas y regeneraciones; no elimina archivos existentes hasta que se solicite expresamente. El filtro del frontal solo afecta a los tamaños configurados como desactivados; conserva las variantes permitidas y la metadata completa en administración para que las herramientas de análisis puedan operar.
 
 ## Changelog
 
 ### 1.3.1
 
+- Conserva el fallback de 1.3.0 al original cuando el frontal solicita un tamaño desactivado.
 - Corregida la salida escapada de la plantilla de mantenimiento y los textos de administración revisados con Plugin Check.
 - Publicación compatible con las instalaciones que ya tienen Taisa Tools 1.3.0.
 
